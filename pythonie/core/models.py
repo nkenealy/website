@@ -1,5 +1,4 @@
 from __future__ import unicode_literals
-from blog.models import BlogPage, BlogCategory
 
 from django.db import models
 from modelcluster.fields import ParentalKey
@@ -20,8 +19,9 @@ from wagtail.wagtailadmin.edit_handlers import StreamFieldPanel
 from wagtail.wagtailimages.blocks import ImageChooserBlock
 from wagtail.wagtailembeds.blocks import EmbedBlock
 
+from sponsors.models import Sponsor, SponsorshipLevel
+
 import logging
-# from meetups.models import Meetup
 
 log = logging.getLogger('pythonie')
 
@@ -56,7 +56,9 @@ class PageSegment(models.Model):
     body = RichTextField()
     location = models.CharField(
         max_length=5,
-        choices=(('main', 'Main section'), ('right', 'Right side'), ('left', 'Left side')),
+        choices=(('main', 'Main section'),
+                 ('right', 'Right side'),
+                 ('left', 'Left side')),
         default='main')
 
     panels = [
@@ -66,14 +68,16 @@ class PageSegment(models.Model):
     ]
 
     def __str__(self):
-        return "{!s} on {!s}".format(self.title, self.homepage_segments.first())
+        return "{!s} on {!s}".format(self.title,
+                                     self.homepage_segments.first())
 
 
 class HomePageSegment(Orderable, models.Model):
     """ Pivot table to associate a HomePage to Segment snippets
     """
     homepage = ParentalKey('HomePage', related_name='homepage_segments')
-    segment = models.ForeignKey('PageSegment', related_name='homepage_segments')
+    segment = models.ForeignKey('PageSegment',
+                                related_name='homepage_segments')
 
     class Meta:
         verbose_name = "Homepage Segment"
@@ -87,9 +91,6 @@ class HomePageSegment(Orderable, models.Model):
         return "{!s} Segment".format(self.homepage)
 
 
-from sponsors.models import Sponsor, SponsorshipLevel
-
-
 class HomePageSponsorRelationship(models.Model):
     """ Qualify how sponsor helped content described in HomePage
     Pivot table for Sponsor M<-->M HomePage
@@ -99,7 +100,9 @@ class HomePageSponsorRelationship(models.Model):
     level = models.ForeignKey(SponsorshipLevel)
 
     def __repr__(self):
-        return '{} {} {}'.format(self.sponsor.name, self.homepage.title, self.level.name)
+        return '{} {} {}'.format(self.sponsor.name,
+                                 self.homepage.title,
+                                 self.level.name)
 
 
 class HomePage(Page, MeetupMixin, SponsorMixin):
@@ -116,7 +119,9 @@ class HomePage(Page, MeetupMixin, SponsorMixin):
         ('html', RawHTMLBlock(icon="code"))
     ])
 
-    sponsors = models.ManyToManyField(Sponsor, through=HomePageSponsorRelationship, null=True, blank=True)
+    sponsors = models.ManyToManyField(Sponsor,
+                                      through=HomePageSponsorRelationship,
+                                      blank=True)
 
     def __str__(self):
         return self.title
@@ -125,9 +130,10 @@ class HomePage(Page, MeetupMixin, SponsorMixin):
         StreamFieldPanel('body'),
     ]
 
-    settings_panels = Page.settings_panels + MeetupMixin.settings_panels + SponsorMixin.settings_panels + [
-        InlinePanel('homepage_segments', label='Homepage Segment'),
-    ]
+    settings_panels = (Page.settings_panels + MeetupMixin.settings_panels +
+                       SponsorMixin.settings_panels +
+                       [InlinePanel('homepage_segments',
+                                    label='Homepage Segment')])
 
 
 class SimplePage(Page, MeetupMixin, SponsorMixin):
@@ -149,7 +155,8 @@ class SimplePage(Page, MeetupMixin, SponsorMixin):
         StreamFieldPanel('body'),
     ]
 
-    settings_panels = Page.settings_panels + MeetupMixin.settings_panels + SponsorMixin.settings_panels
+    settings_panels = (Page.settings_panels + MeetupMixin.settings_panels +
+                       SponsorMixin.settings_panels)
 
 
 @newsindex
@@ -159,9 +166,11 @@ class NewsIndex(NewsIndexMixin, Page):
 
 
 class NewsItem(AbstractNewsItem):
-    # NewsItem is a normal Django model, *not* a Wagtail Page.
-    # Add any fields required for your page.
-    # It already has ``date`` field, and a link to its parent ``NewsIndex`` Page
+    """
+    NewsItem is a normal Django model, *not* a Wagtail Page.
+    Add any fields required for your page.
+    It already has ``date`` field, and a link to its parent ``NewsIndex`` Page
+    """
     title = models.CharField(max_length=255)
     body = RichTextField()
 

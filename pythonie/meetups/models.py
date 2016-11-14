@@ -5,7 +5,6 @@ from django.db import models
 from sponsors.models import Sponsor
 from wagtail.wagtailsnippets.models import register_snippet
 from delorean import Delorean
-from delorean.dates import UTC
 
 import logging
 
@@ -34,12 +33,13 @@ class Meetup(models.Model):
     description = models.TextField()
     event_url = models.URLField()
 
-    sponsors = models.ManyToManyField(Sponsor, through=MeetupSponsorRelationship, null=True, blank=True)
-
+    sponsors = models.ManyToManyField(Sponsor,
+                                      through=MeetupSponsorRelationship,
+                                      blank=True)
     time = models.DateTimeField()
     created = models.DateTimeField()
     updated = models.DateTimeField(default=Delorean(datetime(1970, 1, 1),
-                                                    timezone=UTC).datetime)
+                                                    timezone='UTC').datetime)
 
     rsvps = models.IntegerField(default=0)
     maybe_rsvps = models.IntegerField(default=0)
@@ -57,4 +57,5 @@ class Meetup(models.Model):
     @classmethod
     def future_events(cls):
         today = datetime.now()
-        return cls.objects.filter(time__gt=today).filter(time__lt=next_n_months(today, 3))
+        return cls.objects.filter(
+            time__gt=today).filter(time__lt=next_n_months(today, 3))

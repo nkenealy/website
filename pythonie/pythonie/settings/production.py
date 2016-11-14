@@ -1,10 +1,8 @@
-from .base import *
-
 from pythonie.settings.configure import configure_redis
+from .base import *  # flake8: noqa
 
 # Disable debug mode
 DEBUG = False
-TEMPLATE_DEBUG = False
 
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
@@ -51,6 +49,6 @@ REDIS = configure_redis(REDIS_URL)
 
 
 try:
-    from .local import *
+    from .local import *  # noqa
 except ImportError:
     pass
